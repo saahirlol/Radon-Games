@@ -22,8 +22,8 @@ RUN npm install -g pnpm
 # Set the working directory
 WORKDIR /app
 
-# Clone the GitHub repository
-RUN git clone https://github.com/Radon-Games/Radon-Games.git .
+# Copy local files to the Docker image
+COPY . .
 
 # Install dependencies
 RUN pnpm install
@@ -32,7 +32,7 @@ RUN pnpm install
 RUN pnpm run build
 
 # Expose the necessary port
-EXPOSE 4173
+EXPOSE 80
 
-# Run the preview server
-CMD ["pnpm", "run", "preview"]
+# Run the preview server on 0.0.0.0:80
+CMD ["pnpm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "80"]
