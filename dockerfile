@@ -1,8 +1,11 @@
-# Use an official Node.js runtime as a parent image
+# Use an official Node.js runtime based on Alpine as a parent image
 FROM node:18-alpine
 
 # Set the working directory in the container
 WORKDIR /app
+
+# Install required packages for building native dependencies
+RUN apk add --no-cache python3 make g++
 
 # Copy the package.json and pnpm-lock.yaml files to the container
 COPY package.json pnpm-lock.yaml ./
@@ -19,8 +22,8 @@ COPY . .
 # Build the application
 RUN pnpm run build
 
-# Expose the port the app runs on
-EXPOSE 4173
+# Expose port 80 for the application
+EXPOSE 80
 
-# Start the application
-CMD ["pnpm", "run", "preview"]
+# Start the application and force it to listen on port 80
+CMD ["pnpm", "run", "preview", "--", "--port", "80"]
