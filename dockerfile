@@ -1,37 +1,20 @@
-# Use the official Node.js 18 image as a base
+# Use the official Node.js image as a base image
 FROM node:18-alpine
 
-# Set the working directory
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /
 
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
-
 # Install dependencies
 RUN pnpm install
-
-# Copy the rest of the application code
-COPY . .
 
 # Build the application
 RUN pnpm run build
 
-# Install Caddy
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list && \
-    apt-get update && \
-    apt-get install -y caddy
+# Expose the port the app runs on
+EXPOSE 4173
 
-# Create the Caddyfile
-RUN echo ":80 {\n reverse_proxy 127.0.0.1:4173\n}" > /etc/caddy/Caddyfile
-
-# Expose the ports
-EXPOSE 80
-
-# Command to run both Caddy and the Node.js app
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+# Start the application
+CMD ["pnpm", "run", "preview"]
