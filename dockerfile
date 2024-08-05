@@ -1,29 +1,38 @@
-# Use an official Node.js runtime based on Alpine as a parent image
-FROM node:18-alpine
+# Use Alpine as the base image
+FROM alpine:latest
 
-# Set the working directory in the container
-WORKDIR /app
+# Install necessary packages and add repositories for Node.js
+RUN apk update && \
+    apk add --no-cache \
+    curl \
+    bash \
+    build-base \
+    ca-certificates \
+    git \
+    libgcc \
+    libstdc++ \
+    && update-ca-certificates
 
-# Install required packages for building native dependencies
-RUN apk add --no-cache python3 make g++
+# Install Node.js
+RUN apk add --no-cache nodejs npm
 
-# Copy the package.json and pnpm-lock.yaml files to the container
-COPY package.json pnpm-lock.yaml ./
-
-# Install pnpm globally
+# Install pnpm using npm
 RUN npm install -g pnpm
 
-# Install application dependencies
+# Set the working directory
+WORKDIR /app
+
+# Clone the GitHub repository
+RUN git clone https://github.com/Radon-Games/Radon-Games.git .
+
+# Install dependencies
 RUN pnpm install
 
-# Copy the rest of the application code to the container
-COPY . .
-
-# Build the application
+# Build the project
 RUN pnpm run build
 
-# Expose port 80 for the application
-EXPOSE 80
+# Expose the necessary port
+EXPOSE 4173
 
-# Start the application and force it to listen on port 80
-CMD ["pnpm", "run", "preview", "--", "--port", "80"]
+# Run the preview server
+CMD ["pnpm", "run", "preview"]
